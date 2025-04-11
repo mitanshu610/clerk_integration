@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field
 import typing
 from datetime import datetime
-from fastapi import Request, HTTPException, status
+from fastapi import Request
+from clerk_integration.exceptions import UserDataException
 from clerk_backend_api import Clerk
 from clerk_backend_api.jwks_helpers import AuthenticateRequestOptions
 
@@ -21,7 +22,6 @@ class UserData(BaseModel):
     createdAt: typing.Optional[datetime] = None
     updatedAt: typing.Optional[datetime] = None
     workspace: typing.Optional[typing.List[typing.Dict]] = None
-
 
 class UserDataHandler:
     def __init__(self, service_name, clerk_secret_key):
@@ -47,13 +47,6 @@ class UserDataHandler:
                 )
                 return user_data
             else:
-                raise Exception()
+                raise UserDataException("User is not signed in")
         except Exception as e:
-            raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail={
-                        "error": f"Session has expired in {self.service}",
-                        "message": str(e),
-                        "code": 6001
-                    }
-                ) from e
+            raise UserDataException(f"Failed to get user data: {str(e)}")
