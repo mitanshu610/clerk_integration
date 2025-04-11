@@ -11,19 +11,19 @@ class UserData(BaseModel):
     firstName: typing.Optional[str]
     lastName: typing.Optional[str]
     email: typing.Optional[str]
-    username: typing.Optional[str]
-    phoneNumber: typing.Optional[str]
-    roleSlug: typing.Optional[str]
-    profilePicUrl: typing.Optional[str]
-    active: typing.Optional[bool]
-    roleIds: typing.Optional[list[int]]
-    meta: typing.Optional[dict]
-    createdAt: typing.Optional[datetime]
-    updatedAt: typing.Optional[datetime]
-    workspace: typing.List[typing.Dict]
+    username: typing.Optional[str] = None
+    phoneNumber: typing.Optional[str] = None
+    roleSlug: typing.Optional[str] = None
+    profilePicUrl: typing.Optional[str] = None
+    active: typing.Optional[bool] = None
+    roleIds: typing.Optional[list[int]] = None
+    meta: typing.Optional[dict] = None
+    createdAt: typing.Optional[datetime] = None
+    updatedAt: typing.Optional[datetime] = None
+    workspace: typing.Optional[typing.List[typing.Dict]] = None
 
 
-class UserDataHanlder:
+class UserDataHandler:
     def __init__(self, service_name, clerk_secret_key):
         self.service = service_name
         self.clerk_secret_key = clerk_secret_key
@@ -31,11 +31,21 @@ class UserDataHanlder:
     async def get_user_data_from_request(self, request: Request):
         try:
             sdk = Clerk(bearer_auth=self.clerk_secret_key)
-            request_state = sdk.authenticate_request(request)
+            request_state = sdk.authenticate_request(request,
+                    AuthenticateRequestOptions()
+            )
             if request_state.is_signed_in:
-                user_id = request_state.sessions[0].user.primary_identifier
-                user_data = await sdk.user(user_id).get()
-                return UserData.model_construct(user_data.dict())
+                user_id = request_state.payload['sub']
+                org_id = request_state.payload['orgId']
+                user_data = sdk.users.get(user_id=user_id)
+                user_data = UserData(
+                    _id=user_id,
+                    orgId=org_id,
+                    email=user_data.email_addresses[0].email_address,
+                    firstName=user_data.first_name,
+                    lastName=user_data.last_name
+                )
+                return user_data
             else:
                 raise Exception()
         except Exception as e:
