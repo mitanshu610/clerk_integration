@@ -3,7 +3,7 @@ import typing
 from datetime import datetime
 from fastapi import Request
 from clerk_integration.exceptions import UserDataException
-from clerk_backend_api import Clerk
+from clerk_backend_api import Clerk, models
 from clerk_backend_api.jwks_helpers import AuthenticateRequestOptions
 
 class UserData(BaseModel):
@@ -48,6 +48,8 @@ class UserDataHandler:
     async def get_user_data_from_request(self, request: Request):
         try:
             return await self._fetch_user_data(request)
+        except models.ClerkError:
+            raise UserDataException(f"Error occured while validating token - From Clerk: {str(e)}")
         except UserDataException as e:
             raise e
         except Exception as e:
