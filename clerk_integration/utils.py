@@ -48,8 +48,6 @@ class UserDataHandler:
     async def get_user_data_from_request(self, request: Request):
         try:
             return await self._fetch_user_data(request)
-        except models.ClerkError:
-            raise UserDataException(f"Error occured while validating token - From Clerk: {str(e)}")
         except UserDataException as e:
             raise e
         except Exception as e:
