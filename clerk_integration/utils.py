@@ -45,7 +45,7 @@ class UserDataHandler:
         else:
             raise UserDataException("User is not signed in")
 
-    async def get_user_data_from_request(self, request: Request):
+    async def get_user_data_from_clerk(self, request: Request):
         try:
             return await self._fetch_user_data(request)
         except UserDataException as e:
