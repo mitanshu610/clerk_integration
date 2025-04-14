@@ -23,7 +23,7 @@ class UserData(BaseModel):
     updatedAt: typing.Optional[datetime] = None
     workspace: typing.Optional[typing.List[typing.Dict]] = None
 
-class UserDataHandler:
+class ClerkAuthHelper:
     def __init__(self, service_name, clerk_secret_key):
         self.service = service_name
         self.clerk_secret_key = clerk_secret_key
