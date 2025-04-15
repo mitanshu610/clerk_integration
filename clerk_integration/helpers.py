@@ -8,8 +8,6 @@ class ClerkHelper:
     A class for managing Clerk authentications
     """
 
-    BASE_URL = "https://api.clerk.com/v1"
-
     def __init__(self, api_key: str):
         """
         Initialize the ClerkOrganizationManager with your Clerk API key.
@@ -19,3 +17,18 @@ class ClerkHelper:
         """
         self.clerk_secret_key = api_key
         self.clerk_client = Clerk(bearer_auth=self.clerk_secret_key)
+    
+    
+    async def get_clerk_users_by_id(self, user_ids):
+        """
+        Retrieve Clerk users by their IDs.
+
+        Args:
+            user_ids (list): A list of user IDs to retrieve.
+
+        Returns:
+            dict: A dictionary of users keyed by their ID.
+        """
+        clerk_response = self.clerk_client.users.list(request={"user_id": user_ids})
+        clerk_users_by_id = {user["id"]: user for user in clerk_response["data"]}
+        return clerk_users_by_id
