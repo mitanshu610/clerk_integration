@@ -30,5 +30,9 @@ class ClerkHelper:
             dict: A dictionary of users keyed by their ID.
         """
         clerk_response = self.clerk_client.users.list(request={"user_id": user_ids})
-        clerk_users_by_id = {user["id"]: user for user in clerk_response["data"]}
+        clerk_users_by_id = {
+            user.id: { 
+                "firstName": user.first_name, "lastName": user.last_name, "email": user.email_addresses[0].email_address
+            } for user in clerk_response
+        }
         return clerk_users_by_id
