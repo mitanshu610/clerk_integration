@@ -8,7 +8,7 @@ from clerk_backend_api.jwks_helpers import AuthenticateRequestOptions
 
 class UserData(BaseModel):
     userId: typing.Union[int, str] = Field(..., alias="_id")
-    orgId: typing.Optional[typing.Union[int, str]]
+    orgId: typing.Optional[typing.Union[int, str]] = None
     firstName: typing.Optional[str]
     lastName: typing.Optional[str]
     email: typing.Optional[str]
