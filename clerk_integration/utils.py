@@ -43,7 +43,7 @@ class ClerkAuthHelper:
                 lastName=user_data.last_name
             )
         else:
-            raise UserDataException("User is not signed in")
+            raise UserDataException(f"User is not signed in - Service - {self.service}")
 
     async def get_user_data_from_clerk(self, request: Request):
         try:
@@ -51,4 +51,4 @@ class ClerkAuthHelper:
         except UserDataException as e:
             raise e
         except Exception as e:
-            raise UserDataException(f"Failed to get user data: {str(e)}")
+            raise UserDataException(f"Failed to get user data: {str(e)} - Service - {self.service}")
