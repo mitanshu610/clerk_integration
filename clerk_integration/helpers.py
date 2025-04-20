@@ -29,10 +29,50 @@ class ClerkHelper:
         Returns:
             dict: A dictionary of users keyed by their ID.
         """
-        clerk_response = self.clerk_client.users.list(request={"user_id": user_ids})
+        clerk_response = await self.clerk_client.users.list_async(request={"user_id": user_ids})
         clerk_users_by_id = {
             user.id: { 
                 "firstName": user.first_name, "lastName": user.last_name, "email": user.email_addresses[0].email_address
             } for user in clerk_response
         }
         return clerk_users_by_id
+    
+    async def update_organization_metadata(self, organization_id: str, public_metadata: dict, private_metadata: dict):
+        """
+        Update organization metadata by merging existing values with the provided parameters.
+
+        Args:
+            organization_id (str): The ID of the organization for which metadata will be merged or updated.
+            public_metadata (dict): Metadata visible to both frontend and backend.
+            private_metadata (dict): Metadata visible only to the backend.
+
+        Returns:
+            dict: The response from the Clerk API after updating the metadata.
+        """
+        try:
+            await self.clerk_client.organizations.merge_metadata_async(
+                organization_id=organization_id, public_metadata=public_metadata, private_metadata=private_metadata
+            )
+            return True
+        except Exception:
+            return False
+        
+    async def update_user_metadata(self, user_id: str, public_metadata: dict, private_metadata: dict):  
+        """  
+        Update user metadata by merging existing values with the provided parameters.  
+  
+        Args:  
+            user_id (str): The ID of the user for which metadata will be merged or updated.  
+            public_metadata (dict): Metadata visible to both frontend and backend.  
+            private_metadata (dict): Metadata visible only to the backend.  
+  
+        Returns:  
+            dict: The response from the Clerk API after updating the metadata.  
+        """  
+        try:  
+            await self.clerk_client.users.update_metadata_async(  
+                user_id=user_id, public_metadata=public_metadata, private_metadata=private_metadata  
+            )  
+            return True
+        except Exception:  
+            return False
