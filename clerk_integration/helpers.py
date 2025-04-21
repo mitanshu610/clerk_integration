@@ -1,3 +1,4 @@
+from typing import Optional
 from clerk_backend_api import Clerk
 
 import aiohttp
@@ -37,7 +38,7 @@ class ClerkHelper:
         }
         return clerk_users_by_id
     
-    async def update_organization_metadata(self, organization_id: str, public_metadata: dict, private_metadata: dict):
+    async def update_organization_metadata(self, organization_id: str, public_metadata: Optional[dict] = None, private_metadata: Optional[dict] = None):
         """
         Update organization metadata by merging existing values with the provided parameters.
 
@@ -57,7 +58,7 @@ class ClerkHelper:
         except Exception:
             return False
         
-    async def update_user_metadata(self, user_id: str, public_metadata: dict, private_metadata: dict):  
+    async def update_user_metadata(self, user_id: str, public_metadata: Optional[dict] = None, private_metadata: Optional[dict] = None):  
         """  
         Update user metadata by merging existing values with the provided parameters.  
   
