@@ -18,6 +18,7 @@ class ClerkHelper:
         """
         self.clerk_secret_key = api_key
         self.clerk_client = Clerk(bearer_auth=self.clerk_secret_key)
+        self.base_url = "https://api.clerk.com/v1"
     
     
     async def get_clerk_users_by_id(self, user_ids):
@@ -77,3 +78,69 @@ class ClerkHelper:
             return True
         except Exception:  
             return False
+    
+    async def get_org_members(self, organization_id: str, query: Optional[str] = None, limit: int = 10, offset: int = 0):
+        """
+        Retrieve all members of an organization with optional filtering using aiohttp.
+
+        Args:
+            organization_id (str): The organization ID.
+            query (str, optional): Search query to filter members. Matches against email, phone, username, 
+                                 web3 wallet, user ID, first and last names.
+            limit (int, optional): Number of results to return. Defaults to 10. Max 500.
+            offset (int, optional): Number of results to skip. Defaults to 0.
+
+        Returns:
+            dict: Organization members matching the query parameters.
+        """
+        endpoint = f"{self.base_url}/organizations/{organization_id}/memberships"
+        
+        headers = {
+            "Authorization": f"Bearer {self.clerk_secret_key}",
+            "Content-Type": "application/json"
+        }
+        
+        params = {
+            "limit": min(limit, 500),
+            "offset": max(offset, 0)
+        }
+        
+        if query:
+            params["query"] = query
+
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get(endpoint, headers=headers, params=params) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        return {
+                            "members": [
+                                {
+                                    "id": member["public_user_data"]["user_id"],
+                                    "firstName": member["public_user_data"].get("first_name"),
+                                    "lastName": member["public_user_data"].get("last_name"),
+                                    "role": member.get("role")
+                                } for member in data["data"]
+                            ],
+                            "total_count": data.get("total_count", 0)
+                        }
+                    else:
+                        error_data = await response.json()
+                        return {
+                            "error": f"API request failed: {error_data.get('message', 'Unknown error')}",
+                            "status": response.status,
+                            "members": [],
+                            "total_count": 0
+                        }
+            except aiohttp.ClientError as e:
+                return {
+                    "error": f"Network error: {str(e)}",
+                    "members": [],
+                    "total_count": 0
+                }
+            except Exception as e:
+                return {
+                    "error": f"Unexpected error: {str(e)}",
+                    "members": [],
+                    "total_count": 0
+                }
