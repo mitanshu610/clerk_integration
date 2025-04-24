@@ -79,7 +79,7 @@ class ClerkHelper:
         except Exception:  
             return False
     
-    async def get_org_members(self, organization_id: str, query: Optional[str] = None, limit: int = 10, offset: int = 0):
+    async def get_org_members(self, organization_id: str, query: Optional[str] = None, limit: int = 10, offset: int = 0, user_id: Optional[str] = None):
         """
         Retrieve all members of an organization with optional filtering using aiohttp.
 
@@ -107,6 +107,9 @@ class ClerkHelper:
         
         if query:
             params["query"] = query
+        
+        if user_id:
+            params["user_id"] = [user_id]
 
         async with aiohttp.ClientSession() as session:
             try:

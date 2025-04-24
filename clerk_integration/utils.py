@@ -5,6 +5,7 @@ from fastapi import Request
 from clerk_integration.exceptions import UserDataException
 from clerk_backend_api import Clerk, models
 from clerk_backend_api.jwks_helpers import AuthenticateRequestOptions
+from clerk_integration.helpers import ClerkHelper
 
 class UserData(BaseModel):
     userId: typing.Union[int, str] = Field(..., alias="_id")
@@ -27,6 +28,7 @@ class ClerkAuthHelper:
     def __init__(self, service_name, clerk_secret_key):
         self.service = service_name
         self.clerk_secret_key = clerk_secret_key
+        self.clerk_helper = ClerkHelper(clerk_secret_key)
 
     async def _fetch_user_data(self, request: Request) -> UserData:
         sdk = Clerk(bearer_auth=self.clerk_secret_key)
@@ -35,12 +37,17 @@ class ClerkAuthHelper:
             user_id = request_state.payload['sub']
             org_id = request_state.payload['orgId']
             user_data = sdk.users.get(user_id=user_id)
+            role_slug = None
+            if org_id:
+                org_member = await self.clerk_helper.get_org_members(org_id, user_id=user_id)
+                role_slug = org_member.get("role")
             return UserData(
                 _id=user_id,
                 orgId=org_id,
                 email=user_data.email_addresses[0].email_address,
                 firstName=user_data.first_name,
-                lastName=user_data.last_name
+                lastName=user_data.last_name,
+                roleSlug=role_slug
             )
         else:
             raise UserDataException(f"User is not signed in - Service - {self.service}")
