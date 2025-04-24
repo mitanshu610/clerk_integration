@@ -39,8 +39,11 @@ class ClerkAuthHelper:
             user_data = sdk.users.get(user_id=user_id)
             role_slug = None
             if org_id:
-                org_member = await self.clerk_helper.get_org_members(org_id, user_id=user_id)
-                role_slug = org_member.get("role")
+                org_entries = await self.clerk_helper.get_org_members(org_id, user_id=user_id)
+                member = org_entries["members"]
+                if member:
+                    role_slug = member[0].get("role", None)
+                    
             return UserData(
                 _id=user_id,
                 orgId=org_id,
