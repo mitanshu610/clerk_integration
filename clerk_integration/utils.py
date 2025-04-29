@@ -23,6 +23,7 @@ class UserData(BaseModel):
     createdAt: typing.Optional[datetime] = None
     updatedAt: typing.Optional[datetime] = None
     workspace: typing.Optional[typing.List[typing.Dict]] = None
+    publicMetadata: typing.Optional[typing.Dict] = None
 
 class ClerkAuthHelper:
     def __init__(self, service_name, clerk_secret_key):
@@ -36,7 +37,7 @@ class ClerkAuthHelper:
         if request_state.is_signed_in:
             user_id = request_state.payload['sub']
             org_id = request_state.payload['orgId']
-            user_data = sdk.users.get(user_id=user_id)
+            user_data = await sdk.users.get_async(user_id=user_id)
             role_slug = None
             if org_id:
                 org_entries = await self.clerk_helper.get_org_members(org_id, user_id=user_id)
@@ -50,7 +51,8 @@ class ClerkAuthHelper:
                 email=user_data.email_addresses[0].email_address,
                 firstName=user_data.first_name,
                 lastName=user_data.last_name,
-                roleSlug=role_slug
+                roleSlug=role_slug,
+                publicMetadata=user_data.public_metadata
             )
         else:
             raise UserDataException(f"User is not signed in - Service - {self.service}")
