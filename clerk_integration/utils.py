@@ -28,7 +28,7 @@ class UserData(BaseModel):
     publicMetadata: typing.Optional[typing.Dict] = None
 
 class ClerkAuthHelper:
-    def __init__(self, service_name, clerk_secret_key, redis_url=None):
+    def __init__(self, service_name, clerk_secret_key):
         self.service = service_name
         self.clerk_secret_key = clerk_secret_key
         self.clerk_helper = ClerkHelper(clerk_secret_key)
