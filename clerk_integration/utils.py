@@ -4,13 +4,10 @@ from datetime import datetime
 from fastapi import Request
 
 from clerk_integration.exceptions import UserDataException
-from clerk_backend_api import Clerk, models
+from clerk_backend_api import Clerk
 from clerk_backend_api.jwks_helpers import AuthenticateRequestOptions
 from clerk_integration.helpers import ClerkHelper
-from contextlib import asynccontextmanager
-from urllib.parse import urlparse
 
-import redis.asyncio as redis
 
 class UserData(BaseModel):
     userId: typing.Union[int, str] = Field(..., alias="_id")
