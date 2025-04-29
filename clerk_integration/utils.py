@@ -2,10 +2,12 @@ from pydantic import BaseModel, Field
 import typing
 from datetime import datetime
 from fastapi import Request
+
 from clerk_integration.exceptions import UserDataException
-from clerk_backend_api import Clerk, models
+from clerk_backend_api import Clerk
 from clerk_backend_api.jwks_helpers import AuthenticateRequestOptions
 from clerk_integration.helpers import ClerkHelper
+
 
 class UserData(BaseModel):
     userId: typing.Union[int, str] = Field(..., alias="_id")
@@ -37,29 +39,34 @@ class ClerkAuthHelper:
         if request_state.is_signed_in:
             user_id = request_state.payload['sub']
             org_id = request_state.payload['orgId']
-            user_data = await sdk.users.get_async(user_id=user_id)
-            role_slug = None
-            if org_id:
-                org_entries = await self.clerk_helper.get_org_members(org_id, user_id=user_id)
-                member = org_entries["members"]
-                if member:
-                    role_slug = member[0].get("role", None)
+            first_name = request_state.payload['firstName']
+            last_name = request_state.payload['lastName']
+            primary_email = request_state.payload['email']
+            public_metadata = {}
+            if request_state.payload['uPublicMetaData']:
+                public_metadata = request_state.payload['uPublicMetaData']
+
+            if org_id and request_state.payload['oPublicMetaData']:
+                public_metadata = request_state.payload['oPublicMetaData']
+
+            role_slug = request_state.payload['roleSlug']
                     
             return UserData(
                 _id=user_id,
                 orgId=org_id,
-                email=user_data.email_addresses[0].email_address,
-                firstName=user_data.first_name,
-                lastName=user_data.last_name,
+                email=primary_email,
+                firstName=first_name,
+                lastName=last_name,
                 roleSlug=role_slug,
-                publicMetadata=user_data.public_metadata
+                publicMetadata=public_metadata
             )
         else:
             raise UserDataException(f"User is not signed in - Service - {self.service}")
 
     async def get_user_data_from_clerk(self, request: Request):
         try:
-            return await self._fetch_user_data(request)
+            user_data = await self._fetch_user_data(request)
+            return user_data
         except UserDataException as e:
             raise e
         except Exception as e:
