@@ -36,32 +36,25 @@ class ClerkAuthHelper:
     async def _fetch_user_data(self, request: Request) -> UserData:
         sdk = Clerk(bearer_auth=self.clerk_secret_key)
         request_state = sdk.authenticate_request(request, AuthenticateRequestOptions())
-        if request_state.is_signed_in:
-            user_id = request_state.payload['sub']
-            org_id = request_state.payload['orgId']
-            first_name = request_state.payload['firstName']
-            last_name = request_state.payload['lastName']
-            primary_email = request_state.payload['email']
-            public_metadata = {}
-            if request_state.payload['uPublicMetaData']:
-                public_metadata = request_state.payload['uPublicMetaData']
 
-            if org_id and request_state.payload['oPublicMetaData']:
-                public_metadata = request_state.payload['oPublicMetaData']
-
-            role_slug = request_state.payload['roleSlug']
-                    
-            return UserData(
-                _id=user_id,
-                orgId=org_id,
-                email=primary_email,
-                firstName=first_name,
-                lastName=last_name,
-                roleSlug=role_slug,
-                publicMetadata=public_metadata
-            )
-        else:
+        if not request_state.is_signed_in:
             raise UserDataException(f"User is not signed in - Service - {self.service}")
+
+        payload = request_state.payload
+        public_metadata = payload.get('uPublicMetaData', {})
+        if payload.get('orgId') and payload.get('oPublicMetaData'):
+            public_metadata = payload['oPublicMetaData']
+                
+        return UserData(
+            _id=payload['sub'],
+            orgId=payload.get('orgId'),
+            email=payload.get('email'),
+            firstName=payload.get('firstName'),
+            lastName=payload.get('lastName'),
+            roleSlug=payload.get('roleSlug'),
+            publicMetadata=public_metadata
+        )
+
 
     async def get_user_data_from_clerk(self, request: Request):
         try:
