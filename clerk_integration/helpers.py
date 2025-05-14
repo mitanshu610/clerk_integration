@@ -38,7 +38,7 @@ class ClerkHelper(ClerkClientInterface):
         self.base_url = "https://api.clerk.com/v1"
     
     
-    async def get_clerk_users_by_id(self, user_ids):
+    async def get_clerk_users_by_id(self, user_ids: List[str]):
         """
         Retrieve Clerk users by their IDs.
 
