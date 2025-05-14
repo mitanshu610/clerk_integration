@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 from clerk_backend_api import Clerk
 
 import aiohttp
