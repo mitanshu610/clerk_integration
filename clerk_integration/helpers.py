@@ -1,10 +1,27 @@
-from typing import Optional
+from typing import Optional, List, Dict
 from clerk_backend_api import Clerk
 
 import aiohttp
 
 
-class ClerkHelper:
+class ClerkClientInterface:
+    async def get_clerk_users_by_id(self, user_ids: List[str]) -> List[Dict]:
+        pass
+
+    async def update_organization_metadata(self, organization_id: str, public_metadata: Optional[dict], private_metadata: Optional[dict]) -> bool:
+        pass
+
+    async def update_user_metadata(self, user_id: str, public_metadata: Optional[dict], private_metadata: Optional[dict]) -> bool:
+        pass
+
+    async def get_org_members(self, organization_id: str, query: Optional[str], limit: int, offset: int, user_id: Optional[str]) -> Dict:
+        pass
+
+    async def update_organisation_config(self, organization_id: str, max_allowed_memberships: int) -> bool:
+        pass
+
+
+class ClerkHelper(ClerkClientInterface):
     """
     A class for managing Clerk authentications
     """
@@ -147,3 +164,12 @@ class ClerkHelper:
                     "members": [],
                     "total_count": 0
                 }
+    
+    async def update_organisation_config(self, organisation_id: str, max_allowed_memberships: int = 5):
+        try:
+            await self.clerk_client.organizations.update_async(
+                organization_id=organisation_id, max_allowed_memberships=max_allowed_memberships
+            )
+            return True
+        except Exception:
+            return False
