@@ -147,3 +147,12 @@ class ClerkHelper:
                     "members": [],
                     "total_count": 0
                 }
+    
+    async def update_organization_config(self, organization_id: str, max_allowed_memberships: int = 5) -> bool:
+        try:
+            await self.clerk_client.organizations.update_async(
+                organization_id=organization_id, max_allowed_memberships=max_allowed_memberships
+            )
+            return True
+        except Exception:
+            return False
