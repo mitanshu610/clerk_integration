@@ -42,8 +42,8 @@ class ClerkAuthHelper:
 
         payload = request_state.payload
         public_metadata = payload.get('uPublicMetaData', {})
-        if payload.get('orgId') and payload.get('oPublicMetaData'):
-            public_metadata = payload['oPublicMetaData']
+        if payload.get('orgId'):
+            public_metadata = payload.get('oPublicMetaData', {})
                 
         return UserData(
             _id=payload['sub'],
