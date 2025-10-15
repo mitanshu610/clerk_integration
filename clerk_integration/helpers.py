@@ -116,15 +116,33 @@ class ClerkHelper:
                 async with session.get(endpoint, headers=headers, params=params) as response:
                     if response.status == 200:
                         data = await response.json()
+                        members = []
+                        for member in data["data"]:
+                            user_id = member["public_user_data"]["user_id"]
+                            first_name = member["public_user_data"].get("first_name")
+                            last_name = member["public_user_data"].get("last_name")
+                            
+                            member_data = {
+                                "id": user_id,
+                                "firstName": first_name,
+                                "lastName": last_name,
+                                "role": member.get("role")
+                            }
+                            
+                            # Check if firstname or lastname is null/None, then fetch email
+                            if first_name is None or last_name is None:
+                                try:
+                                    user_details = await self.clerk_client.users.get_async(user_id=user_id)
+                                    if user_details and user_details.email_addresses:
+                                        member_data["email"] = user_details.email_addresses[0].email_address
+                                except Exception:
+                                    # If fetching user details fails, continue without email
+                                    pass
+                            
+                            members.append(member_data)
+                        
                         return {
-                            "members": [
-                                {
-                                    "id": member["public_user_data"]["user_id"],
-                                    "firstName": member["public_user_data"].get("first_name"),
-                                    "lastName": member["public_user_data"].get("last_name"),
-                                    "role": member.get("role")
-                                } for member in data["data"]
-                            ],
+                            "members": members,
                             "total_count": data.get("total_count", 0)
                         }
                     else:
