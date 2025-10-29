@@ -174,3 +174,12 @@ class ClerkHelper:
             return True
         except Exception:
             return False
+
+    async def get_user_org_membership(self, user_id: str, organization_id: str) -> bool:
+        try:
+            membership = await self.clerk_client.organization_memberships.get_async(
+                organization_id=organization_id, user_id=user_id
+            )
+            return membership
+        except Exception as e:
+            return False
