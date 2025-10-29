@@ -191,7 +191,15 @@ class ClerkHelper:
             membership = await self.clerk_client.organization_memberships.list_async(
                 organization_id=organization_id, user_id=[user_id]
             )
-            return membership.data[0]
+            membership_data = membership.data[0]
+            return {
+                "error": False,
+                "organization_id": membership_data,
+                "user_id": user_id,
+                "role": membership_data.role,
+                "role_name": membership_data.role_name,
+                "permissions": membership_data.permissions
+            }
         except IndexError:
             return {
                 "error": f"User with user_id '{user_id}' is not a member of organization '{organization_id}'"
