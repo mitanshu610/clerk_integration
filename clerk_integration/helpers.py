@@ -184,7 +184,7 @@ class ClerkHelper:
             organization_id (str): The ID of the organization.
             
         Returns:
-            OrganizationMembership: The membership object if user is a member.
+            dict: membership details dictionary.
             dict: Error dictionary if user is not a member or if an error occurs.
         """
         try:
