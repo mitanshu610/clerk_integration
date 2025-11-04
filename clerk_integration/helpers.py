@@ -174,3 +174,37 @@ class ClerkHelper:
             return True
         except Exception:
             return False
+
+    async def get_user_org_membership(self, user_id: str, organization_id: str):
+        """
+        Retrieve user membership details for a specific organization.
+        
+        Args:
+            user_id (str): The ID of the user to check membership for.
+            organization_id (str): The ID of the organization.
+            
+        Returns:
+            dict: membership details dictionary.
+            dict: Error dictionary if user is not a member or if an error occurs.
+        """
+        try:
+            membership = await self.clerk_client.organization_memberships.list_async(
+                organization_id=organization_id, user_id=[user_id]
+            )
+            membership_data = membership.data[0]
+            return {
+                "error": False,
+                "organization_id": membership_data,
+                "user_id": user_id,
+                "role": membership_data.role,
+                "role_name": membership_data.role_name,
+                "permissions": membership_data.permissions
+            }
+        except IndexError:
+            return {
+                "error": f"User with user_id '{user_id}' is not a member of organization '{organization_id}'"
+            }
+        except Exception as e:
+            return {
+                "error": f"Unexpected error: {str(e)}"
+            }

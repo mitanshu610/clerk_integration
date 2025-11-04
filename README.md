@@ -11,7 +11,7 @@ pip install clerk_integration
 ## Requirements
 
 - Python >= 3.9
-- clerk-backend-api >= 1.8.0
+- clerk-backend-api >= 2.2.0
 - fastapi >= 0.115.3
 - pydantic >= 2.11.3
 - aiohttp >= 3.10.11
